@@ -4,49 +4,69 @@ linkja programs (which are written in Java), this includes the Java Native Inter
 headers with the C code.
 
 
+## Supported platforms
+
+The C library targets Windows x64, Linux x64 and macOS. We test macOS by hand and Linux in CI. Windows is untested since the move to OpenSSL 3. The library links OpenSSL 3 found on the system with CMake's `find_package(OpenSSL 3)`. The repository no longer ships OpenSSL binaries.
+
+* macOS and Windows link libcrypto statically, so the built library has no OpenSSL dependency at run time.
+* Linux links the distribution's shared libcrypto (`libssl3` on Ubuntu).
+* If CMake does not find OpenSSL, set `OPENSSL_ROOT_DIR` to its install prefix, either as an environment variable or with `-DOPENSSL_ROOT_DIR=...`.
+
+CI (`.github/workflows/ci.yml`) builds on Ubuntu with a throwaway secret, runs the C tests and assembles the jar on every pull request.
+
+### Secret and no-secrets builds
+
+`INCLUDE_SECRETS` is `ON` by default. Configure then writes a new random secret to `src/include/linkja_secret.h` with `openssl rand`, so the `openssl` command must be on your `PATH`.
+
+With `-DINCLUDE_SECRETS=OFF`, the library has no secret. `Library.createSecureHash` then throws `UnsupportedOperationException`. All other methods work.
+
 ## Building on macOS
 
 ### Dependencies
 
-Setup and building of the linkja-crypto library requires the following:
+1. Xcode command line tools (`xcode-select --install`)
+2. Homebrew packages: `brew install cmake openssl@3 cmocka maven`
+3. A JDK 25, e.g. `brew install openjdk@25`
 
-1. [CMake](https://cmake.org) (3.8 or higher)
-2. Java (1.8 or higher; [OpenJDK](https://openjdk.java.net/) is allowed)
-    1. Requires the JDK to be installed
-    2. Will use javac and java binaries
-    3. Requires Java Native Interface (JNI), which comes with most JDKs
-3. [OpenSSL](https://www.openssl.org/) - the openssl binary needs to be in your path for the build scripts to work.  You can test this by executing "openssl version" at the command line.
-4. C compiler and make system
-    1. For macOS, gcc and make can be used.
-    2. For Windows, Visual Studio 2019 Community edition can be used.
-5. [cmocka](https://cmocka.org/) for unit tests
-    1. For macOS, `brew install cmocka`
-    2. For Windows, [download the latest source code](https://cmocka.org/files/1.1/)
-        1. Extract the .tar.xz to a folder
-        2. You can use Visual Studio to open the folder and build via CMakeList
+The scripts read `JAVA_HOME` and `OPENSSL_ROOT_DIR` when set. Otherwise they use `/usr/libexec/java_home` and `brew --prefix openssl@3`. Homebrew Java is not registered with `/usr/libexec/java_home`, so set `JAVA_HOME` for it. Set `OPENSSL_ROOT_DIR` yourself only to use another OpenSSL 3 install.
 
-### Compiling
+### Compiling and testing
 
-There are multiple components that go into building the linkja-crypto library.  For macOS, these are wrapped up into the `build.sh` script (available from the root directory).
-
-1. Create the JNI header file
-  >`$JAVA_HOME/bin/javac -h ./src/include ./src/java/Library.java`
-
-2. Ensure cmake targets are built and/or updated
-  > `cmake .`
-
-3. Build the library
-  ```
-  make clean
-  make
-  ```
-
-### Testing
-To ensure everything is set up correctly, you can compile and run a simple test program using the testing script:
+These are the commands we ran on macOS (Apple Silicon) with OpenSSL 3.6 and Java 25:
 
 ```
+export JAVA_HOME=/opt/homebrew/opt/openjdk@25
+./build.sh
 ./test.sh
 ```
+
+`build.sh` creates the JNI header, configures CMake, builds the jar with Maven and compiles `target/liblinkjacrypto.dylib`. `test.sh` runs the C tests with `ctest` and then the Java check in `src/test/java/Test.java`. Use `./build-nosecrets.sh` for a build without the secret.
+
+### Architecture
+
+The build makes a library for the architecture of the Mac it runs on. Check it with `lipo -archs target/liblinkjacrypto.dylib`.
+
+A universal library (arm64 and x86_64) needs a universal OpenSSL 3. Homebrew installs OpenSSL for one architecture only. With a universal OpenSSL, configure with:
+
+```
+cmake . -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64" -DOPENSSL_ROOT_DIR=<universal OpenSSL prefix>
+```
+
+If the OpenSSL is not universal, the link stops with `symbol(s) not found for architecture x86_64`.
+
+## Building on Linux
+
+CI runs these commands on Ubuntu (`ubuntu-latest`) with Temurin JDK 25:
+
+```
+sudo apt-get install -y libssl-dev cmake libcmocka-dev
+mvn -B package
+cmake . -DCMAKE_BUILD_TYPE=Release
+make
+ctest --output-on-failure
+```
+
+The library is `target/liblinkjacrypto.so`. Add `-DINCLUDE_SECRETS=OFF` to the `cmake` line for a build without the secret.
 
 ## Building on Windows
 
@@ -95,9 +115,13 @@ In the setup, ensure all of the options are set:
 
 ### OpenSSL
 
-You will need OpenSSL tools and libraries.  We ran into issues finding a suitable OpenSSL build for Windows that would work for this process.  Although you may not wish to blindly and use our version, [we have made a build of OpenSSL 1.1.1f available](https://northwestern.box.com/s/jo0i43676clexastg5p795r0bejzaf10) and will use it in these instructions.
+You need OpenSSL 3 static libraries and the `openssl` command. We have not tested this on Windows since the move to OpenSSL 3. One way is [vcpkg](https://vcpkg.io) with the triplet that has static libraries and the dynamic C runtime:
 
-You will need to download the ZIP file, and extract the contents.  For these instructions we have placed the files in `C:\Program Files\OpenSSL`.
+```
+vcpkg install openssl:x64-windows-static-md
+```
+
+Then set `OPENSSL_ROOT_DIR` to the install prefix, e.g. `C:\vcpkg\installed\x64-windows-static-md`. CMake reads it from the environment.
 
 ### Download linkja-crypto
 
@@ -115,10 +139,11 @@ Clone the repository from [https://github.com/linkja/linkja-crypto.git](https://
 
 In order for the build process to work, you will need to run the `x64 Native Tools Command Prompt for VS 2019`.  This can be navigated to from the Windows Start menu, and can be found under the `Visual Studio 2019` foldler.  There are similarly named options, so please confirm that you have selected the right one.
 
-First, we will set up our command prompt `PATH` environment variable to include the path to the OpenSSL binaries.
+First, we will point CMake at OpenSSL and put the `openssl` command on the `PATH`. Change the paths to match your install.
 
 ```
-SET PATH=%PATH%;"C:\Program Files\OpenSSL\vc-win64a\bin"
+SET OPENSSL_ROOT_DIR=C:\vcpkg\installed\x64-windows-static-md
+SET PATH=%PATH%;%OPENSSL_ROOT_DIR%\tools\openssl
 ```
 
 Next we will change to the directory where we downloaded the linkja-crypto code
