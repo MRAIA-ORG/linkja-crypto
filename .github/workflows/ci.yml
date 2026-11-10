@@ -1,0 +1,35 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [develop, master]
+
+permissions:
+  contents: read
+
+jobs:
+  linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '25'
+
+      - name: Install OpenSSL 3, CMake and cmocka
+        run: sudo apt-get update && sudo apt-get install -y libssl-dev cmake libcmocka-dev
+
+      - name: Assemble the jar
+        run: mvn -B package
+
+      # Configure generates a new random secret on every run. It is never stored.
+      - name: Compile the secret build with a throwaway secret
+        run: |
+          cmake . -DCMAKE_BUILD_TYPE=Release
+          make
+
+      - name: Run the C tests
+        run: ctest --output-on-failure
