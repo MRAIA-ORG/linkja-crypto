@@ -33,3 +33,16 @@ jobs:
 
       - name: Run the C tests
         run: ctest --output-on-failure
+
+      # Reconfigure the same tree without the secret. make recompiles the library.
+      - name: Compile the no-secrets build
+        run: |
+          cmake . -DINCLUDE_SECRETS=OFF
+          make
+
+      # NoSecretsTest exits 1 if createSecureHash does not throw UnsupportedOperationException.
+      - name: Run the no-secrets Java check
+        run: |
+          jar=$(ls target/linkja-crypto-*.jar)
+          javac -cp "$jar" -d target/test-classes src/test/java/NoSecretsTest.java
+          java -cp "$jar:target/test-classes" -Djava.library.path=target NoSecretsTest

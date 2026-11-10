@@ -12,7 +12,7 @@ The C library targets Windows x64, Linux x64 and macOS. We test macOS by hand an
 * Linux links the distribution's shared libcrypto (`libssl3` on Ubuntu).
 * If CMake does not find OpenSSL, set `OPENSSL_ROOT_DIR` to its install prefix, either as an environment variable or with `-DOPENSSL_ROOT_DIR=...`.
 
-CI (`.github/workflows/ci.yml`) builds on Ubuntu with a throwaway secret, runs the C tests and assembles the jar on every pull request.
+CI (`.github/workflows/ci.yml`) runs on Ubuntu for every pull request. It assembles the jar, builds with a throwaway secret and runs the C tests. Then it builds without the secret and runs `src/test/java/NoSecretsTest.java`.
 
 ### Secret and no-secrets builds
 
@@ -64,9 +64,14 @@ mvn -B package
 cmake . -DCMAKE_BUILD_TYPE=Release
 make
 ctest --output-on-failure
+cmake . -DINCLUDE_SECRETS=OFF
+make
+jar=$(ls target/linkja-crypto-*.jar)
+javac -cp "$jar" -d target/test-classes src/test/java/NoSecretsTest.java
+java -cp "$jar:target/test-classes" -Djava.library.path=target NoSecretsTest
 ```
 
-The library is `target/liblinkjacrypto.so`. Add `-DINCLUDE_SECRETS=OFF` to the `cmake` line for a build without the secret.
+The library is `target/liblinkjacrypto.so`. The second `cmake` line makes a build without the secret. `NoSecretsTest` exits 1 if that build still has the secret.
 
 ## Building on Windows
 
