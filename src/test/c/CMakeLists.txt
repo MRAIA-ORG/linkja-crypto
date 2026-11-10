@@ -78,20 +78,13 @@ INSTALL(TARGETS test-linkja-crypto-rsa RUNTIME DESTINATION out)
 add_test(test-linkja-crypto-rsa ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-linkja-crypto-rsa)
 
 
-# Link in openssl
-add_library(openssl STATIC IMPORTED) # or STATIC instead of SHARED
-set_target_properties(openssl PROPERTIES
-  IMPORTED_LOCATION "${CMAKE_SOURCE_DIR}/lib/openssl/macos/libcrypto.a"
-  INTERFACE_INCLUDE_DIRECTORIES "${CMAKE_SOURCE_DIR}/lib/openssl/include"
-)
-
 # Add the dependency to link to the openssl library
-target_link_libraries(test-linkja-crypto-hash openssl)
-target_link_libraries(test-linkja-crypto-token openssl)
+target_link_libraries(test-linkja-crypto-hash OpenSSL::Crypto)
+target_link_libraries(test-linkja-crypto-token OpenSSL::Crypto)
 if(INCLUDE_SECRETS)
-target_link_libraries(test-linkja-crypto-hash-input-data openssl)
+target_link_libraries(test-linkja-crypto-hash-input-data OpenSSL::Crypto)
 endif()
-target_link_libraries(test-linkja-crypto-hash-supplemental-data openssl)
-target_link_libraries(test-linkja-crypto-conversions openssl)
-target_link_libraries(test-linkja-crypto-aes openssl)
-target_link_libraries(test-linkja-crypto-rsa openssl)
+target_link_libraries(test-linkja-crypto-hash-supplemental-data OpenSSL::Crypto)
+target_link_libraries(test-linkja-crypto-conversions OpenSSL::Crypto)
+target_link_libraries(test-linkja-crypto-aes OpenSSL::Crypto)
+target_link_libraries(test-linkja-crypto-rsa OpenSSL::Crypto)

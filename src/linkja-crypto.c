@@ -340,7 +340,7 @@ bool bytes_to_hex_string(unsigned char* input, unsigned int input_len, char outp
   }
 
   // The last character needs to be NULL string terminator
-  output[output_len] = 0;
+  output[output_len - 1] = 0;
   return true;
 }
 
@@ -778,6 +778,19 @@ JNIEXPORT jstring JNICALL Java_org_linkja_crypto_Library_createSecureHash
   char output[HASH_STRING_OUTPUT_BUFFER_LEN + 1];
   bytes_to_hex_string(final_hash, HASH_OUTPUT_BUFFER_LEN, output, HASH_STRING_OUTPUT_BUFFER_LEN);
   return (*env)->NewStringUTF(env, output);
+}
+#else
+// Library.java declares createSecureHash in every build. Without the secret it
+// cannot work, so it throws instead of failing with an UnsatisfiedLinkError.
+JNIEXPORT jstring JNICALL Java_org_linkja_crypto_Library_createSecureHash
+  (JNIEnv *env, jclass obj, jstring input, jbyteArray sessionKey, jstring rowId, jstring tokenId)
+{
+  (void)obj; (void)input; (void)sessionKey; (void)rowId; (void)tokenId;
+  jclass exc = (*env)->FindClass(env, "java/lang/UnsupportedOperationException");
+  if (exc != NULL) {
+    (*env)->ThrowNew(env, exc, "createSecureHash needs a library built with INCLUDE_SECRETS=ON");
+  }
+  return NULL;
 }
 #endif
 

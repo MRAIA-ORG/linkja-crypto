@@ -77,9 +77,9 @@ bool generate_key(unsigned int length, unsigned char output[]);
 
 bool generate_iv(unsigned int length, unsigned char output[]);
 
-bool hash_string(const char *string, unsigned char output[]);
+bool hash_string(const char *string, unsigned char output[HASH_OUTPUT_BUFFER_LEN]);
 
-bool hash_data(const unsigned char *data, size_t data_len, unsigned char output[]);
+bool hash_data(const unsigned char *data, size_t data_len, unsigned char output[HASH_OUTPUT_BUFFER_LEN]);
 
 bool hash_supplemental_data(const unsigned char *session_key_data, jsize session_key_len,
                             const char *row_id_str, jsize row_id_len,

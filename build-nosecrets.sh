@@ -1,10 +1,12 @@
 #!/bin/bash
 set -e
 
-export JAVA_HOME=$(/usr/libexec/java_home)
+export JAVA_HOME=${JAVA_HOME:-$(/usr/libexec/java_home)}
+# CMake reads OPENSSL_ROOT_DIR from the environment to find OpenSSL 3.
+export OPENSSL_ROOT_DIR=${OPENSSL_ROOT_DIR:-$(brew --prefix openssl@3)}
 
 # Clean up all previous output
-rm CMakeCache.txt
+rm -f CMakeCache.txt
 rm -rf out/
 
 # Create the JNI header file
