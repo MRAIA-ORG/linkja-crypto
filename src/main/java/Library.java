@@ -12,6 +12,7 @@ public class Library {
     // Generate a string representing the hex characters of a hash given the
     // input string, a session key, and further mixed with the row ID and an
     // ID for the token we are creating.
+    // A library built with INCLUDE_SECRETS=OFF throws UnsupportedOperationException.
     public static native String createSecureHash(String input, byte[] sessionKey, String rowId, String tokenId);
 
     // Generate a string representing the hex characters of the true hash of a
