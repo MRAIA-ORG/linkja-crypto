@@ -340,7 +340,7 @@ bool bytes_to_hex_string(unsigned char* input, unsigned int input_len, char outp
   }
 
   // The last character needs to be NULL string terminator
-  output[output_len] = 0;
+  output[output_len - 1] = 0;
   return true;
 }
 
