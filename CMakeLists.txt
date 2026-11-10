@@ -22,7 +22,20 @@ include(UseJava)
 message(STATUS "Using Java ${Java_VERSION_STRING}")
 message(STATUS "  - Java compiler ${Java_JAVAC_EXECUTABLE}")
 
-if (APPLE)
+# OpenSSL 3 comes from the system: Homebrew on macOS, libssl-dev on Linux,
+# vcpkg on Windows. Point CMake at it with -DOPENSSL_ROOT_DIR=<prefix>.
+# On macOS and Windows a static libcrypto keeps the built library
+# self-contained to distribute. Linux links the distro's shared libcrypto.
+if (APPLE OR WIN32)
+	set(OPENSSL_USE_STATIC_LIBS TRUE)
+endif()
+find_package(OpenSSL 3 REQUIRED)
+message(STATUS "Using OpenSSL ${OPENSSL_VERSION}: ${OPENSSL_CRYPTO_LIBRARY}")
+# The code uses the OpenSSL 1.1.1 API (SHA256_*, RSA_*), which OpenSSL 3 marks
+# deprecated. Declare that API level so -Werror does not fail on it.
+add_definitions(-DOPENSSL_API_COMPAT=10101)
+
+if (UNIX)
 	SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/build/modules")
 	find_package(CMOCKA QUIET)
 endif()
@@ -31,7 +44,6 @@ project ("liblinkjacrypto")
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 include_directories(${JNI_INCLUDE_DIRS})
-include_directories("${CMAKE_SOURCE_DIR}/lib/openssl/include")
 
 # try to extract the version from the VERSION file
 FILE(READ ${CMAKE_CURRENT_SOURCE_DIR}/VERSION VERSION)
@@ -48,7 +60,7 @@ unset(VERSION)
 add_subdirectory ("src")
 
 # Include our C unit tests
-if (APPLE)
+if (UNIX)
  	enable_testing()
 	add_subdirectory(src/test/c)
 endif()

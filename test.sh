@@ -15,7 +15,7 @@ fi
 ctest -V
 
 # Run the simple Java integration test
-export JAVA_HOME=$(/usr/libexec/java_home)
+export JAVA_HOME=${JAVA_HOME:-$(/usr/libexec/java_home)}
 
 # Compile our simple test program
 $JAVA_HOME/bin/javac -cp ./target/linkja-crypto-1.0.1.jar ./src/test/java/Test.java

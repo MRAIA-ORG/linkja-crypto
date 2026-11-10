@@ -19,19 +19,19 @@ else()
 
   # Use openssl to generate random hex digits and use those to populate the secret
   # value in the header file
-  if(APPLE)
-    set(rand_cmd openssl rand -hex ${SECRET_LEN})
-    set(digest_cmd openssl dgst -sha256 tmp/openssl.tmp)
-  elseif(WIN32)
+  if(WIN32)
     set(rand_cmd cmd /c openssl rand -hex ${SECRET_LEN})
     set(digest_cmd cmd /c openssl dgst -sha256 tmp/openssl.tmp)
+  else()
+    set(rand_cmd openssl rand -hex ${SECRET_LEN})
+    set(digest_cmd openssl dgst -sha256 tmp/openssl.tmp)
   endif()
   execute_process(COMMAND ${rand_cmd} OUTPUT_VARIABLE RANDOM_VALUE)
   file(WRITE ../tmp/openssl.tmp "${RANDOM_VALUE}")
   # Note that the process executes in the context of the top-level directory, so we
   # access the file under tmp/ instead of ../tmp/
   execute_process(COMMAND ${digest_cmd} OUTPUT_VARIABLE RANDOM_VALUE_HASH)
-  string(REGEX REPLACE "SHA256.*= " "" RANDOM_VALUE_HASH "${RANDOM_VALUE_HASH}")
+  string(REGEX REPLACE "^.*= " "" RANDOM_VALUE_HASH "${RANDOM_VALUE_HASH}")
   string(REGEX REPLACE "\n$" "" RANDOM_VALUE_HASH "${RANDOM_VALUE_HASH}")
   file(REMOVE ../tmp/openssl.tmp)
   foreach(gen_loop RANGE 1 ${SECRET_LEN})
@@ -48,27 +48,6 @@ else()
 endif()
 
 
-# Link in openssl
-add_library(openssl STATIC IMPORTED) # or STATIC instead of SHARED
-add_library(libssl STATIC IMPORTED) # or STATIC instead of SHARED
-
-if(APPLE)
-	set_target_properties(openssl PROPERTIES
-		IMPORTED_LOCATION "${CMAKE_SOURCE_DIR}/lib/openssl/macos/libcrypto.a"
-		INTERFACE_INCLUDE_DIRECTORIES "${CMAKE_SOURCE_DIR}/lib/openssl/include"
-	)
-elseif(WIN32)
-	set_target_properties(openssl PROPERTIES
-		IMPORTED_LOCATION "${CMAKE_SOURCE_DIR}/lib/openssl/windows/libcrypto.lib"
-		INTERFACE_INCLUDE_DIRECTORIES "${CMAKE_SOURCE_DIR}/lib/openssl/include"
-	)
-	set_target_properties(libssl PROPERTIES
-		IMPORTED_LOCATION "${CMAKE_SOURCE_DIR}/lib/openssl/windows/libssl.lib"
-		INTERFACE_INCLUDE_DIRECTORIES "${CMAKE_SOURCE_DIR}/lib/openssl/include"
-	)
-endif()
-
-
 # Specify the .c file that creates our shared library
 add_library(linkjacrypto SHARED "linkja-crypto.c")
 
@@ -80,10 +59,9 @@ elseif(WIN32)
 endif()
 
 # Add the dependency to link to the openssl library
-if (APPLE)
-	target_link_libraries(linkjacrypto openssl)
-elseif(WIN32)
-	target_link_libraries(linkjacrypto crypt32 ws2_32 libssl openssl)
+target_link_libraries(linkjacrypto OpenSSL::Crypto)
+if(WIN32)
+	target_link_libraries(linkjacrypto crypt32 ws2_32)
 endif()
 
 
