@@ -27,9 +27,9 @@
     </developers>
 
     <scm>
-        <connection>scm:git:git://github.com/linkja/linkja-crypto.git</connection>
-        <developerConnection>scm:git:ssh://github.com:linkja/linkja-crypto.git</developerConnection>
-        <url>http://github.com/linkja/linkja-crypto/tree/master</url>
+        <connection>scm:git:https://github.com/MRAIA-ORG/linkja-crypto.git</connection>
+        <developerConnection>scm:git:ssh://git@github.com/MRAIA-ORG/linkja-crypto.git</developerConnection>
+        <url>https://github.com/MRAIA-ORG/linkja-crypto/tree/develop</url>
     </scm>
 
     <properties>

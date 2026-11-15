@@ -124,12 +124,12 @@ Then set `OPENSSL_ROOT_DIR` to the install prefix, e.g. `C:\vcpkg\installed\x64-
 
 ### Download linkja-crypto
 
-Clone the repository from [https://github.com/linkja/linkja-crypto.git](https://github.com/linkja/linkja-crypto.git) using whatever git client you prefer.
+Clone the repository from [https://github.com/MRAIA-ORG/linkja-crypto.git](https://github.com/MRAIA-ORG/linkja-crypto.git) using whatever git client you prefer.
 
 **Instructions for Visual Studio 2019**
 
 0. From Visual Studio 2019, click on "Clone a repository".
-1. "Repository location" - [https://github.com/linkja/linkja-crypto.git](https://github.com/linkja/linkja-crypto.git)
+1. "Repository location" - [https://github.com/MRAIA-ORG/linkja-crypto.git](https://github.com/MRAIA-ORG/linkja-crypto.git)
 2. "Path" - feel free to use the default, or customize.  For this guide we are placing the code in `C:\Users\Linkja\Source\Repos\linkja-crypto`
 3. Go ahead and close Visual Studio at this time. As noted above, we will not be using the IDE to compile.
 
