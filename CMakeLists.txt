@@ -59,8 +59,10 @@ unset(VERSION)
 # Include our actual source.
 add_subdirectory ("src")
 
-# Include our C unit tests
-if (UNIX)
- 	enable_testing()
+# Include our C unit tests. They need cmocka. Without it, build the library only.
+if (UNIX AND CMOCKA_FOUND)
+	enable_testing()
 	add_subdirectory(src/test/c)
+elseif (UNIX)
+	message(STATUS "cmocka not found: skipping the C tests")
 endif()
