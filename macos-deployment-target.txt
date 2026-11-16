@@ -11,6 +11,7 @@
 #   https://adoptium.net/supported-platforms/
 #   (data: https://github.com/adoptium/adoptium.net/blob/main/src/data/supported-platforms.json,
 #   last changed 2026-09-25)
-# We take the higher value, 15.0, so the library never claims a macOS that a
-# Java 25 vendor no longer supports.
-15.0
+# We take the lower value, 12.0. A library built for an older minimum still
+# runs on every newer macOS, so 12.0 excludes nobody, and it lets Intel Macs
+# on macOS 12 to 14 that run Temurin 25 load the library.
+12.0

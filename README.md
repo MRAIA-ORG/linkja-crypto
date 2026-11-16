@@ -58,7 +58,7 @@ lipo -archs target/liblinkjacrypto.dylib
 
 The last command prints `x86_64 arm64`. `build.sh` passes its arguments to `cmake`. Only the library gets both architectures. The build stops with an error if the library lacks an architecture you listed. The C tests stay native, because Homebrew cmocka has one architecture, so `./test.sh` still works. With Homebrew OpenSSL, a universal build stops at the link with `symbol(s) not found for architecture x86_64`.
 
-The universal library and its OpenSSL are built for the macOS in `macos-deployment-target.txt` (15.0, the lowest macOS that Java 25 supports), or newer. That file names its sources. The default build links Homebrew OpenSSL, so it needs the macOS of the Mac that built it, or newer. Check either with `vtool -show-build target/liblinkjacrypto.dylib`.
+The universal library and its OpenSSL are built for the macOS in `macos-deployment-target.txt` (12.0, the lowest macOS that a supported Java 25 build runs on), or newer. That file names its sources. The default build links Homebrew OpenSSL, so it needs the macOS of the Mac that built it, or newer. Check either with `vtool -show-build target/liblinkjacrypto.dylib`.
 
 ## Building on Linux
 
