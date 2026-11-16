@@ -88,3 +88,10 @@ target_link_libraries(test-linkja-crypto-hash-supplemental-data OpenSSL::Crypto)
 target_link_libraries(test-linkja-crypto-conversions OpenSSL::Crypto)
 target_link_libraries(test-linkja-crypto-aes OpenSSL::Crypto)
 target_link_libraries(test-linkja-crypto-rsa OpenSSL::Crypto)
+
+# The library signature exists only in the secret build.
+if(INCLUDE_SECRETS)
+ADD_EXECUTABLE(test-linkja-crypto-signature test-linkja-crypto-signature.c)
+TARGET_LINK_LIBRARIES(test-linkja-crypto-signature ${LIBCMOCKA_LIBRARIES})
+add_test(test-linkja-crypto-signature ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-linkja-crypto-signature)
+endif()

@@ -25,7 +25,7 @@ With `-DINCLUDE_SECRETS=OFF`, the library has no secret. `Library.createSecureHa
 ### Dependencies
 
 1. Xcode command line tools (`xcode-select --install`)
-2. Homebrew packages: `brew install cmake openssl@3 cmocka maven`
+2. Homebrew packages: `brew install cmake openssl@3 maven`, and `brew install cmocka` (optional, for the C tests)
 3. A JDK 25, e.g. `brew install openjdk@25`
 
 The scripts read `JAVA_HOME` and `OPENSSL_ROOT_DIR` when set. Otherwise they use `/usr/libexec/java_home` and `brew --prefix openssl@3`. Homebrew Java is not registered with `/usr/libexec/java_home`, so set `JAVA_HOME` for it. Set `OPENSSL_ROOT_DIR` yourself only to use another OpenSSL 3 install.
@@ -53,7 +53,7 @@ The build does not make a universal library (arm64 and x86_64). Homebrew install
 CI runs these commands on Ubuntu (`ubuntu-latest`) with Temurin JDK 25:
 
 ```
-sudo apt-get install -y libssl-dev cmake libcmocka-dev
+sudo apt-get install -y libssl-dev cmake libcmocka-dev  # libcmocka-dev is optional, for the C tests
 mvn -B package
 cmake . -DCMAKE_BUILD_TYPE=Release
 make
