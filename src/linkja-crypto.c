@@ -599,10 +599,11 @@ bool generate_input_hash(JNIEnv *env, jstring input, unsigned char input_hash[])
 
 
 /*
-  hash_supplemental_data - given a session key ('session_key_str'), a row identifier
-  ('row_id_str') and token identifier ('token_id_str'), create a hash comprised of
-  those values and the project-specific secret hash data.  This will return a byte
-  array ('output') that contains the hash.
+  hash_supplemental_data - given a session key ('session_key_data'), a row identifier
+  ('row_id_str') and token identifier ('token_id_str'), create the SHA-256 hash of
+  those three values concatenated in that order.  It does not use the
+  project-specific secret.  This will return a byte array ('output') that contains
+  the hash.
 
   Returns: true if successful, false otherwise
 */
