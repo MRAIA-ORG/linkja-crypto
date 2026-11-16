@@ -99,6 +99,22 @@ static void test_revert_hash_64_z(void **state) {
 	assert_false(revert_hash(input, 64, revert_supplemental, output));
 }
 
+// The character check must cover the first and the last character.  The first
+// character is '+' because sscanf rejects a leading 'z' by itself, but reads "+f" as f.
+static void test_revert_hash_last_char_z(void **state) {
+	unsigned char output[HASH_OUTPUT_BUFFER_LEN];
+	const char *input = "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffz";
+	assert_int_equal(strlen(input), 64);
+	assert_false(revert_hash(input, 64, revert_supplemental, output));
+}
+
+static void test_revert_hash_first_char_plus(void **state) {
+	unsigned char output[HASH_OUTPUT_BUFFER_LEN];
+	const char *input = "+fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff";
+	assert_int_equal(strlen(input), 64);
+	assert_false(revert_hash(input, 64, revert_supplemental, output));
+}
+
 static void test_revert_hash_partial_hex_pairs(void **state) {
 	unsigned char output[HASH_OUTPUT_BUFFER_LEN];
 	const char *input = "0z0z0z0z0z0z0z0z0z0z0z0z0z0z0z0z0z0z0z0z0z0z0z0z0z0z0z0z0z0z0z0z";
@@ -147,6 +163,8 @@ int main(void) {
 		cmocka_unit_test(test_revert_hash_63_chars),
 		cmocka_unit_test(test_revert_hash_65_chars),
 		cmocka_unit_test(test_revert_hash_64_z),
+		cmocka_unit_test(test_revert_hash_last_char_z),
+		cmocka_unit_test(test_revert_hash_first_char_plus),
 		cmocka_unit_test(test_revert_hash_partial_hex_pairs),
 		cmocka_unit_test(test_revert_hash_leading_space_pairs),
 		cmocka_unit_test(test_revert_hash_valid_upper_case),
