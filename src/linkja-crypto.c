@@ -1,4 +1,5 @@
 #include <jni.h>
+#include <ctype.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -684,6 +685,13 @@ bool revert_hash(const char *input_str, jsize input_len,
     return false;
   }
 
+  // hex_string_to_bytes uses sscanf, which accepts "0z", " f" and "+f" as a pair.
+  for (jsize index = 0; index < input_len; index++) {
+    if (!isxdigit((unsigned char)input_str[index])) {
+      return false;
+    }
+  }
+
   if (!hex_string_to_bytes(input_str, (unsigned int)input_len, input_hash, HASH_OUTPUT_BUFFER_LEN)) {
     return false;
   }
@@ -833,15 +841,28 @@ JNIEXPORT jstring JNICALL Java_org_linkja_crypto_Library_revertSecureHash
     return (*env)->NewStringUTF(env, "");
   }
 
-  const char *input_str = (*env)->GetStringUTFChars(env, input, 0);
-  jsize input_len = (*env)->GetStringUTFLength(env, input);
+  // A null input goes to revert_hash as NULL, which rejects it.
+  const char *input_str = NULL;
+  jsize input_len = 0;
+  if (input != NULL) {
+    input_str = (*env)->GetStringUTFChars(env, input, 0);
+    if (input_str == NULL) {
+      return NULL;  // Out of memory: an OutOfMemoryError is already pending.
+    }
+    input_len = (*env)->GetStringUTFLength(env, input);
+  }
   unsigned char original_hash[HASH_OUTPUT_BUFFER_LEN];
   bool result = revert_hash(input_str, input_len, supplemental_hash, original_hash);
-  (*env)->ReleaseStringUTFChars(env, input, input_str);
+  if (input_str != NULL) {
+    (*env)->ReleaseStringUTFChars(env, input, input_str);
+  }
   if (!result) {
     jclass exc = (*env)->FindClass(env, "java/lang/IllegalArgumentException");
     if (exc != NULL) {
-      (*env)->ThrowNew(env, exc, "revertSecureHash input must be exactly 64 hex characters");
+      char message[96];
+      snprintf(message, sizeof(message), "revertSecureHash input must be exactly %d hex characters",
+        HASH_OUTPUT_BUFFER_LEN * 2);
+      (*env)->ThrowNew(env, exc, message);
     }
     return NULL;
   }

@@ -90,6 +90,39 @@ static void test_revert_hash_65_chars(void **state) {
 	assert_false(revert_hash(input, 65, revert_supplemental, output));
 }
 
+// sscanf("%2hhx") accepts a partial match, leading whitespace and a sign, so
+// revert_hash must check each character itself.
+static void test_revert_hash_64_z(void **state) {
+	unsigned char output[HASH_OUTPUT_BUFFER_LEN];
+	const char *input = "zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz";
+	assert_int_equal(strlen(input), 64);
+	assert_false(revert_hash(input, 64, revert_supplemental, output));
+}
+
+static void test_revert_hash_partial_hex_pairs(void **state) {
+	unsigned char output[HASH_OUTPUT_BUFFER_LEN];
+	const char *input = "0z0z0z0z0z0z0z0z0z0z0z0z0z0z0z0z0z0z0z0z0z0z0z0z0z0z0z0z0z0z0z0z";
+	assert_int_equal(strlen(input), 64);
+	assert_false(revert_hash(input, 64, revert_supplemental, output));
+}
+
+static void test_revert_hash_leading_space_pairs(void **state) {
+	unsigned char output[HASH_OUTPUT_BUFFER_LEN];
+	const char *input = " f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f";
+	assert_int_equal(strlen(input), 64);
+	assert_false(revert_hash(input, 64, revert_supplemental, output));
+}
+
+static void test_revert_hash_valid_upper_case(void **state) {
+	unsigned char output[HASH_OUTPUT_BUFFER_LEN];
+	const char *input = "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF";
+	assert_int_equal(strlen(input), 64);
+	assert_true(revert_hash(input, 64, revert_supplemental, output));
+	char result[HASH_STRING_OUTPUT_BUFFER_LEN];
+	bytes_to_hex_string(output, HASH_OUTPUT_BUFFER_LEN, result, HASH_STRING_OUTPUT_BUFFER_LEN);
+	assert_string_equal(result, "fffefdfcfbfaf9f8f7f6f5f4f3f2f1f0efeeedecebeae9e8e7e6e5e4e3e2e1e0");
+}
+
 static void test_revert_hash_valid(void **state) {
 	unsigned char output[HASH_OUTPUT_BUFFER_LEN];
 	const char *input = "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff";
@@ -113,6 +146,10 @@ int main(void) {
 		cmocka_unit_test(test_revert_hash_10_chars),
 		cmocka_unit_test(test_revert_hash_63_chars),
 		cmocka_unit_test(test_revert_hash_65_chars),
+		cmocka_unit_test(test_revert_hash_64_z),
+		cmocka_unit_test(test_revert_hash_partial_hex_pairs),
+		cmocka_unit_test(test_revert_hash_leading_space_pairs),
+		cmocka_unit_test(test_revert_hash_valid_upper_case),
 		cmocka_unit_test(test_revert_hash_valid)
 	};
 
