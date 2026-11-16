@@ -667,6 +667,32 @@ bool generate_supplemental_hash(JNIEnv *env, jbyteArray sessionKey, jstring rowI
   return supplemental_created;
 }
 
+/*
+  revert_hash - given a secure hash as a hexadecimal string ('input_str') and the
+  supplemental hash, XOR them to recover the original hash bytes ('output').
+  The input must be exactly (2 * HASH_OUTPUT_BUFFER_LEN) hex characters, so that
+  we never read past the end of the decoded input.
+
+  Returns: true if successful, false otherwise
+*/
+bool revert_hash(const char *input_str, jsize input_len,
+  const unsigned char supplemental_hash[], unsigned char output[])
+{
+  unsigned char input_hash[HASH_OUTPUT_BUFFER_LEN];
+  if (!input_str || input_len != HASH_OUTPUT_BUFFER_LEN * 2) {
+    return false;
+  }
+
+  if (!hex_string_to_bytes(input_str, (unsigned int)input_len, input_hash, HASH_OUTPUT_BUFFER_LEN)) {
+    return false;
+  }
+
+  for (int index = 0; index < HASH_OUTPUT_BUFFER_LEN; index++) {
+    output[index] = input_hash[index] ^ supplemental_hash[index];
+  }
+  return true;
+}
+
 JNIEXPORT jstring JNICALL Java_org_linkja_crypto_Library_generateToken
   (JNIEnv *env, jclass obj, jint length)
 {
@@ -806,31 +832,18 @@ JNIEXPORT jstring JNICALL Java_org_linkja_crypto_Library_revertSecureHash
     return (*env)->NewStringUTF(env, "");
   }
 
-  // The contents of input are a STRING - representing the hexadecimal values of each byte in
-  // the original byte array.  We need to convert this to a byte array first, before we can
-  // run our XOR operation.
   const char *input_str = (*env)->GetStringUTFChars(env, input, 0);
   jsize input_len = (*env)->GetStringUTFLength(env, input);
-  // The output array size is half the hex_str length (rounded up)
-  int input_hash_len = (input_len+1)/2;
-  unsigned char* input_hash = malloc(input_hash_len);
-  if (!input_hash) {
-    free(input_hash);
-    return (*env)->NewStringUTF(env, "");
-  }
-
-  bool result = hex_string_to_bytes(input_str, (int)input_len, input_hash, input_hash_len);
+  unsigned char original_hash[HASH_OUTPUT_BUFFER_LEN];
+  bool result = revert_hash(input_str, input_len, supplemental_hash, original_hash);
   (*env)->ReleaseStringUTFChars(env, input, input_str);
   if (!result) {
-    free(input_hash);
-    return (*env)->NewStringUTF(env, "");
+    jclass exc = (*env)->FindClass(env, "java/lang/IllegalArgumentException");
+    if (exc != NULL) {
+      (*env)->ThrowNew(env, exc, "revertSecureHash input must be exactly 64 hex characters");
+    }
+    return NULL;
   }
-
-  unsigned char original_hash[HASH_OUTPUT_BUFFER_LEN];
-  for (int index = 0; index < HASH_OUTPUT_BUFFER_LEN; index++) {
-    original_hash[index] = input_hash[index] ^ supplemental_hash[index];
-  }
-  free(input_hash);
 
   char output[HASH_STRING_OUTPUT_BUFFER_LEN + 1];
   bytes_to_hex_string(original_hash, HASH_OUTPUT_BUFFER_LEN, output, HASH_STRING_OUTPUT_BUFFER_LEN);

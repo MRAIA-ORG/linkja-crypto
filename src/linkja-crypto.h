@@ -86,6 +86,9 @@ bool hash_supplemental_data(const unsigned char *session_key_data, jsize session
                             const char *token_id_str, jsize token_id_len,
                             unsigned char output[]);
 
+bool revert_hash(const char *input_str, jsize input_len,
+                 const unsigned char supplemental_hash[], unsigned char output[]);
+
 #ifdef INCLUDE_SECRETS
 bool hash_input_data(const char *input_str, jsize input_str_len, unsigned char output[]);
 #endif
