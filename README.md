@@ -53,12 +53,14 @@ The build does not make a universal library (arm64 and x86_64). Homebrew install
 CI runs these commands on Ubuntu (`ubuntu-latest`) with Temurin JDK 25:
 
 ```
+sudo apt-get update
 sudo apt-get install -y libssl-dev cmake libcmocka-dev  # libcmocka-dev is optional, for the C tests
 mvn -B package
 cmake . -DCMAKE_BUILD_TYPE=Release
 make
-ctest --output-on-failure
+ctest --output-on-failure --no-tests=error
 cmake . -DINCLUDE_SECRETS=OFF
+make clean  # make 3.81 on macOS can keep the secret object file, because it compares whole seconds
 make
 jar=$(ls target/linkja-crypto-*.jar)
 javac -cp "$jar" -d target/test-classes src/test/java/NoSecretsTest.java
