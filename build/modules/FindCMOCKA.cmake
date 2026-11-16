@@ -4,8 +4,6 @@
 # LIBCMOCKA_INCLUDE_DIRS - include directories
 # LIBCMOCKA_LIBRARIES - library directories
 
-cmake_minimum_required (VERSION 3.8)
-
 if (APPLE OR UNIX)
 	find_package(PkgConfig)
 	pkg_check_modules(PC_LIBCMOCKA QUIET cmocka)

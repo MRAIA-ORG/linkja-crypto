@@ -5,6 +5,11 @@ on:
   push:
     branches: [develop, master]
 
+# A new push to the same branch cancels the older run.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
 

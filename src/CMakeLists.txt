@@ -69,4 +69,12 @@ endif()
 set_target_properties(linkjacrypto
     PROPERTIES
     LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/target"
+    # Export only the JNI functions. JNIEXPORT marks them visible, everything
+    # else in linkja-crypto.c stays hidden.
+    C_VISIBILITY_PRESET hidden
 )
+# The static libcrypto linked on macOS brings its own visible symbols.
+# Keep only the JNI functions in the export table.
+if(APPLE)
+	target_link_libraries(linkjacrypto "-Wl,-exported_symbol,_Java_*")
+endif()
