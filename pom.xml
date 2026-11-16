@@ -10,7 +10,7 @@
 
     <name>${project.groupId}:${project.artifactId}</name>
     <description>Shared crypto Java library across linkja projects.</description>
-    <url>https://linkja.github.io/</url>
+    <url>https://github.com/MRAIA-ORG/linkja-crypto</url>
 
     <licenses>
         <license>
