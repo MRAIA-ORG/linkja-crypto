@@ -1,0 +1,9 @@
+# OpenSSL releases that build-openssl-universal.sh may build, with the
+# SHA-256 of openssl-<version>.tar.gz. The script refuses any other version.
+# Each value was checked against two sources before it was added here:
+# - the asset digest of the GitHub release, e.g.
+#   gh api repos/openssl/openssl/releases/tags/openssl-3.6.5 --jq '.assets[] | select(.name=="openssl-3.6.5.tar.gz") | .digest'
+# - the release PGP signature (.asc) under the signing key whose fingerprint
+#   https://openssl-library.org/source/ publishes.
+# Format: <version> <sha256>
+3.6.5 a2157c2830efdec3788939b00c9b0638306d3f0bbb76dc4832ee503bb397df98

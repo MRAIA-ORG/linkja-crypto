@@ -2,6 +2,17 @@
 # and include sub-projects here.
 #
 cmake_minimum_required (VERSION 3.8)
+
+# Lowest macOS the universal library runs on. The value and its source live
+# in macos-deployment-target.txt, which build-openssl-universal.sh also reads,
+# so the library and its OpenSSL agree. The default build links Homebrew
+# OpenSSL, which is built for the macOS of the build Mac, so it keeps that
+# minimum. It must be set before project(). Other platforms ignore it.
+if(LINKJA_OSX_ARCHITECTURES)
+  file(STRINGS "${CMAKE_CURRENT_SOURCE_DIR}/macos-deployment-target.txt" LINKJA_MACOS_MIN REGEX "^[0-9]")
+  set(CMAKE_OSX_DEPLOYMENT_TARGET "${LINKJA_MACOS_MIN}" CACHE STRING "Lowest macOS the library runs on")
+endif()
+
 project("linkja-crypto")
 
 option(INCLUDE_SECRETS "Include the hashing secrets in the library" ON)

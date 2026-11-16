@@ -46,7 +46,7 @@ export JAVA_HOME=/opt/homebrew/opt/openjdk@25
 
 By default the build makes a library for the architecture of the Mac it runs on. On Apple Silicon, the library is arm64 only. Check it with `lipo -archs target/liblinkjacrypto.dylib`.
 
-A universal library (arm64 and x86_64) needs a universal OpenSSL 3. Homebrew installs OpenSSL 3 for one architecture only. `build-openssl-universal.sh` downloads an OpenSSL release from the openssl/openssl GitHub releases and checks its published SHA-256. Then it builds a static OpenSSL for each architecture and joins them with `lipo`. It needs no Homebrew packages and changes nothing outside the folder you give it. These are the commands we ran on Apple Silicon:
+A universal library (arm64 and x86_64) needs a universal OpenSSL 3. Homebrew installs OpenSSL 3 for one architecture only. `build-openssl-universal.sh` downloads an OpenSSL release from the openssl/openssl GitHub releases. It stops unless the SHA-256 of the download equals the value pinned for that version in `openssl-versions.txt`, and it refuses a version with no pinned value. Then it builds a static OpenSSL for each architecture and joins them with `lipo`. It needs no Homebrew packages and changes nothing outside the folder you give it. These are the commands we ran on Apple Silicon:
 
 ```
 export JAVA_HOME=/opt/homebrew/opt/openjdk@25
@@ -56,9 +56,9 @@ export OPENSSL_ROOT_DIR="$HOME/openssl-universal"
 lipo -archs target/liblinkjacrypto.dylib
 ```
 
-The last command prints `x86_64 arm64`. `build.sh` passes its arguments to `cmake`. Only the library gets both architectures. The C tests stay native, because Homebrew cmocka has one architecture, so `./test.sh` still works. With Homebrew OpenSSL, a universal build stops at the link with `symbol(s) not found for architecture x86_64`.
+The last command prints `x86_64 arm64`. `build.sh` passes its arguments to `cmake`. Only the library gets both architectures. The build stops with an error if the library lacks an architecture you listed. The C tests stay native, because Homebrew cmocka has one architecture, so `./test.sh` still works. With Homebrew OpenSSL, a universal build stops at the link with `symbol(s) not found for architecture x86_64`.
 
-The library needs the macOS version of the Mac that built it, or newer. Check it with `vtool -show-build target/liblinkjacrypto.dylib`.
+The universal library and its OpenSSL are built for the macOS in `macos-deployment-target.txt` (15.0, the lowest macOS that Java 25 supports), or newer. That file names its sources. The default build links Homebrew OpenSSL, so it needs the macOS of the Mac that built it, or newer. Check either with `vtool -show-build target/liblinkjacrypto.dylib`.
 
 ## Building on Linux
 

@@ -1,0 +1,16 @@
+# Lowest macOS the macOS library runs on. CMakeLists.txt reads it into
+# CMAKE_OSX_DEPLOYMENT_TARGET, and build-openssl-universal.sh into
+# MACOSX_DEPLOYMENT_TARGET. Both read the first line that starts with a digit.
+#
+# The library runs only inside a Java 25 JVM, so this is the lowest macOS
+# that Java 25 supports. The two vendors disagree (retrieved 2026-11-15):
+# - Oracle JDK 25 certified system configurations: macOS 15 (x64, AArch64)
+#   and macOS 26 (AArch64). macOS 14 is "No longer supported".
+#   https://www.oracle.com/java/technologies/javase/products-doc-jdk25certconfig.html
+# - Eclipse Temurin supported platforms: macOS 12 to 15 for Java 25.
+#   https://adoptium.net/supported-platforms/
+#   (data: https://github.com/adoptium/adoptium.net/blob/main/src/data/supported-platforms.json,
+#   last changed 2026-09-25)
+# We take the higher value, 15.0, so the library never claims a macOS that a
+# Java 25 vendor no longer supports.
+15.0

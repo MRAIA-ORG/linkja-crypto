@@ -77,4 +77,11 @@ set_target_properties(linkjacrypto
 # which has one architecture, so they stay native.
 if(APPLE AND LINKJA_OSX_ARCHITECTURES)
   set_target_properties(linkjacrypto PROPERTIES OSX_ARCHITECTURES "${LINKJA_OSX_ARCHITECTURES}")
+  # Stop the build if the library lacks a listed architecture, e.g. when the
+  # line above is lost and the library is silently arm64 only. The bad library
+  # is deleted, so a second make does not treat it as up to date.
+  add_custom_command(TARGET linkjacrypto POST_BUILD
+    COMMAND sh -c "lipo \"$0\" -verify_arch \"$@\" || { echo \"error: $0 lacks an architecture in LINKJA_OSX_ARCHITECTURES ($*). It has: $(lipo -archs \"$0\")\" >&2; rm -f \"$0\"; exit 1; }"
+      $<TARGET_FILE:linkjacrypto> ${LINKJA_OSX_ARCHITECTURES}
+    VERBATIM)
 endif()
