@@ -70,3 +70,11 @@ set_target_properties(linkjacrypto
     PROPERTIES
     LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/target"
 )
+
+# macOS universal library, e.g. -DLINKJA_OSX_ARCHITECTURES="arm64;x86_64".
+# It needs an OpenSSL with every listed architecture (build-openssl-universal.sh).
+# Only the library gets these architectures. The C tests link Homebrew cmocka,
+# which has one architecture, so they stay native.
+if(APPLE AND LINKJA_OSX_ARCHITECTURES)
+  set_target_properties(linkjacrypto PROPERTIES OSX_ARCHITECTURES "${LINKJA_OSX_ARCHITECTURES}")
+endif()

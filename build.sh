@@ -12,8 +12,9 @@ rm -rf out/
 # Create the JNI header file
 $JAVA_HOME/bin/javac -h ./src/include ./src/main/java/AesResult.java ./src/main/java/RsaResult.java ./src/main/java/Library.java
 
-# Ensure cmake targets are updated
-cmake . -DCMAKE_BUILD_TYPE=Release
+# Ensure cmake targets are updated. Arguments go to cmake, e.g.
+# ./build.sh -DLINKJA_OSX_ARCHITECTURES="arm64;x86_64"
+cmake . -DCMAKE_BUILD_TYPE=Release "$@"
 
 mvn clean package
 

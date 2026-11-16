@@ -44,9 +44,21 @@ export JAVA_HOME=/opt/homebrew/opt/openjdk@25
 
 ### Architecture
 
-The build makes a library for the architecture of the Mac it runs on. On Apple Silicon, the library is arm64 only. Check it with `lipo -archs target/liblinkjacrypto.dylib`.
+By default the build makes a library for the architecture of the Mac it runs on. On Apple Silicon, the library is arm64 only. Check it with `lipo -archs target/liblinkjacrypto.dylib`.
 
-The build does not make a universal library (arm64 and x86_64). Homebrew installs OpenSSL 3 for one architecture only. With Homebrew OpenSSL, `-DCMAKE_OSX_ARCHITECTURES="arm64;x86_64"` stops at the link with `symbol(s) not found for architecture x86_64`. A universal build needs a universal OpenSSL 3. We did not test that.
+A universal library (arm64 and x86_64) needs a universal OpenSSL 3. Homebrew installs OpenSSL 3 for one architecture only. `build-openssl-universal.sh` downloads an OpenSSL release from the openssl/openssl GitHub releases and checks its published SHA-256. Then it builds a static OpenSSL for each architecture and joins them with `lipo`. It needs no Homebrew packages and changes nothing outside the folder you give it. These are the commands we ran on Apple Silicon:
+
+```
+export JAVA_HOME=/opt/homebrew/opt/openjdk@25
+export OPENSSL_ROOT_DIR="$HOME/openssl-universal"
+./build-openssl-universal.sh 3.6.5 "$OPENSSL_ROOT_DIR"
+./build.sh -DLINKJA_OSX_ARCHITECTURES="arm64;x86_64"
+lipo -archs target/liblinkjacrypto.dylib
+```
+
+The last command prints `x86_64 arm64`. `build.sh` passes its arguments to `cmake`. Only the library gets both architectures. The C tests stay native, because Homebrew cmocka has one architecture, so `./test.sh` still works. With Homebrew OpenSSL, a universal build stops at the link with `symbol(s) not found for architecture x86_64`.
+
+The library needs the macOS version of the Mac that built it, or newer. Check it with `vtool -show-build target/liblinkjacrypto.dylib`.
 
 ## Building on Linux
 
