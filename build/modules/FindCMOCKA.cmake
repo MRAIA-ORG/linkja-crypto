@@ -1,6 +1,6 @@
 # From: https://github.com/lperkov/cmocka-hello/blob/master/build/modules/FindCMOCKA.cmake
 
-# LIBCMOCKA_FOUND - true if library and headers were found
+# CMOCKA_FOUND - true if library and headers were found
 # LIBCMOCKA_INCLUDE_DIRS - include directories
 # LIBCMOCKA_LIBRARIES - library directories
 
@@ -21,7 +21,7 @@ if (APPLE OR UNIX)
 
 	include(FindPackageHandleStandardArgs)
 
-	find_package_handle_standard_args(LIBCMOCKA DEFAULT_MSG LIBCMOCKA_LIBRARY LIBCMOCKA_INCLUDE_DIR)
+	find_package_handle_standard_args(CMOCKA DEFAULT_MSG LIBCMOCKA_LIBRARY LIBCMOCKA_INCLUDE_DIR)
 
 	mark_as_advanced(LIBCMOCKA_INCLUDE_DIR LIBCMOCKA_LIBRARY)
 endif()

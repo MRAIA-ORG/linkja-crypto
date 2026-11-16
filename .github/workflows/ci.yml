@@ -32,7 +32,7 @@ jobs:
           make
 
       - name: Run the C tests
-        run: ctest --output-on-failure
+        run: ctest --output-on-failure --no-tests=error
 
       # Reconfigure the same tree without the secret. make recompiles the library.
       - name: Compile the no-secrets build
