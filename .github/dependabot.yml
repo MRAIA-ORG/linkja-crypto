@@ -1,0 +1,13 @@
+# Dependabot checks the GitHub Actions in .github/workflows once a week and opens one grouped PR.
+# The C library (CMake) has no Dependabot ecosystem. The pom.xml has no dependencies to update.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    target-branch: develop
+    open-pull-requests-limit: 2
+    groups:
+      github-actions:
+        patterns: ["*"]
